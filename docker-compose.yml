@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  db:
+    image: registry.ort.services/ortinteractive/mysql:latest
+    volumes:
+      - 'db_data:/var/lib/mysql'
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+    networks:
+      - intra
+    ports:
+      - '3306:3306'
+  app:
+    depends_on:
+      - db
+    build: .
+    env_file:
+      - .env
+    environment:
+      VIRTUAL_HOST: '${APP_HOSTNAME}'
+    hostname: '${APP_HOSTNAME}'
+    volumes:
+      - './src/:/var/www'
+    networks:
+      - intra
+      - nginx-proxy
+volumes:
+  db_data: null
+networks:
+    intra:
+    nginx-proxy:
+        external:
+            name: nginx-proxy
